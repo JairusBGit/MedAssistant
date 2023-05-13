@@ -5,9 +5,11 @@ import sys
 import tkinter as tk
 import tkinter.simpledialog as sd
 import tkinter.filedialog as filedialog
+import speech_recognition as sr
 from tkinter import ttk
 from shutil import copyfile
 
+"""
 from google.assistant.library.event import EventType
 
 from aiy.voice import tts
@@ -17,17 +19,19 @@ from aiy.leds import Color, Leds
 from os import listdir
 from os.path import isfile, join
 from aiy.assistant.library import Assistant
+"""
 
 
 # The class implementation could be somewhat better..
 class medicalAssistant:
     def __init__(self):
         self._task = threading.Thread(target=self.runTask)
-        self._medAssistant = None
+        self._rec = sr.Recognizer()
+        self._mic = sr.Microphone(sample_rate=4000)
         self._startConvo = False
-        self._board = Board()
-        self._board.button.when_pressed = self.buttonPressed
-        self._led = Leds()
+
+    def tts_speak(self, text):
+        # wraps the tts function to keep it short
 
     def startAssistant(self):
         self._task.start()
@@ -73,19 +77,45 @@ class medicalAssistant:
 
         tts.say("refresh finished")
 
+    def recogText(self, audio):
+        text = ""
+        try:
+            text = self._rec.recognize_sphinx(audio)
+        except sr.UnknownValueError:
+            print('cannot recognize')
+        except sr.RequestError:
+            print('request error')
+
+        logging.info(text)
+        return text
+
     def runTask(self):
+        """
         credentials = auth_helpers.get_assistant_credentials()
         with Assistant(credentials) as assistant:
             self._medAssistant = assistant
             for event in assistant.start():
                 self.checkEvent(event)
+        """
+        # notes for later, add loop for "hotword detection"
+        with self._mic as source:
+            self._rec.adjust_for_ambient_noise(source)
+            listen(self._rec.listen_in_background(self._mic, ))
+
+            audio = self._rec(source,
+                    lambda rec, aud: )
+
 
     def buttonPressed(self):
         if self._startConvo:
-            self._medAssistant.start_conversation()
+            # self._medAssistant.start_conversation()
+            with self._mic as source:
+                recogText(audio)
+                checkCommand(text)
 
-    def checkEvent(self, event):
+    def checkEvent(self):
         logging.info(event)
+        """
         if event.type == EventType.ON_START_FINISHED:
             self._led.update(Leds.rgb_off())
             self._startConvo = True
@@ -105,6 +135,7 @@ class medicalAssistant:
               event.type == EventType.ON_CONVERSATION_TURN_TIMEOUT):
             self._led.update(Leds.rgb_off())
             self._startConvo = True
+            """
 
     # i dont like this part
     # can i use match cases
