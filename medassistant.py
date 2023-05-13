@@ -90,21 +90,16 @@ class medicalAssistant:
         return text
 
     def runTask(self):
-        """
-        credentials = auth_helpers.get_assistant_credentials()
-        with Assistant(credentials) as assistant:
-            self._medAssistant = assistant
-            for event in assistant.start():
-                self.checkEvent(event)
-        """
         # notes for later, add loop for "hotword detection"
+        hot_word = False
         with self._mic as source:
             self._rec.adjust_for_ambient_noise(source)
             listen(self._rec.listen_in_background(self._mic, ))
 
             audio = self._rec(source,
-                    lambda rec, aud: )
-
+                              (lambda recog, aud:
+                                  if "get" in recogText(aud):
+                                      getProfile(text)))
 
     def buttonPressed(self):
         if self._startConvo:
@@ -113,60 +108,9 @@ class medicalAssistant:
                 recogText(audio)
                 checkCommand(text)
 
-    def checkEvent(self):
-        logging.info(event)
-        """
-        if event.type == EventType.ON_START_FINISHED:
-            self._led.update(Leds.rgb_off())
-            self._startConvo = True
-
-        elif event.type == EventType.ON_CONVERSATION_TURN_STARTED:
-            self._startConvo = False
-            self._led.update(Leds.rgb_on(Color.GREEN))
-
-        # process commands
-        elif event.type == EventType.ON_RECOGNIZING_SPEECH_FINISHED and event.args:
-            print("out: ", event.args['text'])
-            text = event.args['text'].lower()
-            self.checkCommand(text)
-
-        elif (event.type == EventType.ON_CONVERSATION_TURN_FINISHED or
-              event.type == EventType.ON_NO_RESPONSE or
-              event.type == EventType.ON_CONVERSATION_TURN_TIMEOUT):
-            self._led.update(Leds.rgb_off())
-            self._startConvo = True
-            """
-
-    # i dont like this part
-    # can i use match cases
-    def checkCommand(self, text):
-        # TODO remove
-        if text == "say hello":
-            self._medAssistant.stop_conversation()
-            self.helloWorld()
-
-        elif text == "shutdown system":
-            self._medAssistant.stop_conversation()
-            tts.say("Now Shutting Down", volume=60)
-            subprocess.run("sudo shutdown now", shell=True)
-
-        elif "get" in text:
-            self._medAssistant.stop_conversation()
-            self.getProfile(text)
-
-        elif text == "refresh":
-            self._medAssistant.stop_conversation()
-            self.refreshIndex()
-
-        elif text == "goodbye":
-            self._medAssistant.stop_conversation()
-            self._led.update(Leds.rgb_off())
-            tts.say("Goodbye", volume=60)
-            sys.exit(0)
-
     def textInput(self, input):
         if self._startConvo:
-            self._medAssistant.send_text_query(input)
+            getProfile(input)
 
 
 # huh.
