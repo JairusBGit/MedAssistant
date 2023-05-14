@@ -81,8 +81,8 @@ class medicalAssistant:
             text = self._rec.recognize_sphinx(audio)
         except sr.UnknownValueError:
             print('cannot recognize')
-        except sr.RequestError:
-            print('request error')
+        except sr.RequestError as e:
+            print('request error: {0}'.format(e))
 
         logging.info(text)
         return text
