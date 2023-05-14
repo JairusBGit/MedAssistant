@@ -6,6 +6,7 @@ import tkinter as tk
 import tkinter.simpledialog as sd
 import tkinter.filedialog as filedialog
 import speech_recognition as sr
+import os
 from tkinter import ttk
 from shutil import copyfile
 
@@ -30,9 +31,6 @@ class medicalAssistant:
         self._mic = sr.Microphone(sample_rate=4000)
         self._startConvo = False
 
-    def tts_speak(self, text):
-        # wraps the tts function to keep it short
-
     def startAssistant(self):
         self._task.start()
 
@@ -41,11 +39,11 @@ class medicalAssistant:
             array = index.readlines()
 
             if len(text) < 4:
-                tts.say("syntax error")
+                print("syntax error")
                 return
             else:
                 text = text.replace("get", "")
-                tts.say("pulling profile for %s" % text)
+                print("pulling profile for %s" % text)
                 text = text.replace(" ", "")
 
             for x in array:
@@ -53,7 +51,7 @@ class medicalAssistant:
                     profile = x
 
             if "profile" not in locals():
-                tts.say("""profile not in index, have you tried running \"refresh\"
+                print("""profile not in index, have you tried running \"refresh\"
                         or checking if the filename is correct?""")
                 return
 
@@ -69,13 +67,13 @@ class medicalAssistant:
 
     def refreshIndex(self):
         # gets a list of all files in a directory, then writes them into a file
-        profiles = [f for f in listdir("profiles/") if isfile(join("profiles/",
+        profiles = [f for f in os.listdir("profiles/") if os.path.isfile(os.path.join("profiles/",
                     f))]
         with open('index', 'w') as file:
             for i in profiles:
                 file.write(i + "\n")
 
-        tts.say("refresh finished")
+        print("refresh finished")
 
     def recogText(self, audio):
         text = ""
@@ -94,23 +92,19 @@ class medicalAssistant:
         hot_word = False
         with self._mic as source:
             self._rec.adjust_for_ambient_noise(source)
-            listen(self._rec.listen_in_background(self._mic, ))
 
-            audio = self._rec(source,
-                              (lambda recog, aud:
-                                  if "get" in recogText(aud):
-                                      getProfile(text)))
-
+        listen = (self._rec.listen_in_background(self._mic, (lambda recog, aud: self.getProfile(self.recogText(aud)) if "get" in self.recogText(aud) else None)))
+          
     def buttonPressed(self):
         if self._startConvo:
             # self._medAssistant.start_conversation()
             with self._mic as source:
-                recogText(audio)
-                checkCommand(text)
+                text = self.recogText(source)
+                self.checkCommand(text)
 
     def textInput(self, input):
         if self._startConvo:
-            getProfile(input)
+            self.getProfile(input)
 
 
 # huh.
